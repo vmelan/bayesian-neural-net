@@ -38,3 +38,16 @@ class SimpleNet():
 			else: 
 				# else, do not use activation function 
 				return output
+
+	def train_optimizer(self, loss_value):
+		""" Use an optimizer to train the network """
+		with tf.name_scope("optimizer"):
+			# Create optimizer 
+			# optimizer= tf.train.AdamOptimizer(learning_rate=self.config['trainer']['learning_rate'], 
+			# 	beta1=self.config['trainer'][''])
+			optimizer = getattr(tf.train, self.config['optimizer']['optimizer_type'])(
+				**self.config['optimizer']['optimizer_params'])
+			# Initialize train step 
+			train_step = optimizer.minimize(loss_value)
+
+			return train_step 

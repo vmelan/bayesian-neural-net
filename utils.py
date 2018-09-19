@@ -12,5 +12,5 @@ def clean_events(config):
 		shutil.rmtree(os.path.join(current_path, 'tensorboard/' + config['exp_name'] + "/"))
 		os.mkdir(os.path.join(current_path, 'tensorboard/' + config['exp_name'] + "/"))
 	except:
-		pass
+		logger.info("Starting new experiment")
 
