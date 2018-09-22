@@ -8,6 +8,7 @@ from losses import compute_loss, compute_loss_bnn
 
 import pdb
 
+
 def main():
 	logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def main():
 	net = SimpleNet(config)
 	net_output = net.forward(X)
 	y_pred, log_sigma = net_output[..., 0], net_output[..., 1]
-	# tf.Print(y_pred, [y_pred], "y_pred: ")
+	# Track mean of log_sigma across batch of data
 	tf.summary.scalar("mean_log_sigma", tf.reduce_mean(log_sigma))
 
 	## Define metrics based on experiment
@@ -41,9 +42,10 @@ def main():
 		loss = compute_loss(y_true=y, y_pred=y_pred)
 	elif type_exp == 'loss_bnn':
 		loss = compute_loss_bnn(y_true=y, y_pred=y_pred, log_sigma=log_sigma)
+
 	# Root Mean Squared Error (RMSE)
 	rmse = compute_rmse(y_true=y, y_pred=y_pred)
-
+	
 	## Define optimizer
 	optimizer = net.train_optimizer(loss)
 
@@ -54,9 +56,13 @@ def main():
 	with tf.Session() as sess:
 		# Initializing all variables
 		sess.run(tf.global_variables_initializer())
+
+		# Create train and test writer  
+		train_writer = tf.summary.FileWriter("./tensorboard/" + config["exp_name"] + "/train/")
+		test_writer = tf.summary.FileWriter("./tensorboard/" + config["exp_name"] + "/test/")
+
 		# Visualizing the Graph 
-		writer = tf.summary.FileWriter("./tensorboard/" + config["exp_name"])
-		writer.add_graph(sess.graph)
+		train_writer.add_graph(sess.graph)
 
 		for epoch in range(config["trainer"]["num_epochs"]):
 			for batch in range(config["trainer"]["num_iter_per_epoch"]):
@@ -68,15 +74,18 @@ def main():
 				train_loss, train_rmse = sess.run([loss, rmse], feed_dict={X: batch_X, y: batch_y})
 
 
-			# Evaluate test data 
-			test_loss, test_rmse = sess.run([loss, rmse], feed_dict={X: batch_X, y: batch_y})
-
-
 			if (epoch % config["trainer"]["writer_step"] == 0):
 				# Run the merged summary and write it to disk 
-				# logger.debug("here !")
 				s = sess.run(merged_summary, feed_dict={X: batch_X, y: batch_y})
-				writer.add_summary(s, (epoch + 1))
+
+				train_writer.add_summary(s, (epoch + 1))
+
+				# Evaluate test data 
+				test_loss, test_rmse = sess.run([loss, rmse], feed_dict={X: X_test, y: y_test})
+				s = sess.run(merged_summary, feed_dict={X: X_test, y: y_test})
+
+				test_writer.add_summary(s, (epoch + 1))
+
 
 
 			if (epoch % config["trainer"]["display_step"] == 0): 
@@ -87,12 +96,8 @@ def main():
       				   "test_rmse={:03f}".format(test_rmse)
       				   )
 
-			# pdb.set_trace()
-
 		print("Training complete")
 
-
-	pdb.set_trace()
 
 if __name__ == '__main__':
 	# set logging config 
