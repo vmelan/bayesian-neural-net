@@ -23,16 +23,16 @@ def main():
 	X_train, X_test, y_train, y_test = data_loader.get_data()
 
 	## Create placeholders
-	X = tf.placeholder(tf.float32, [None, 13])
+	X = tf.placeholder(tf.float64, [None, 13])
 	# y = tf.placeholder(tf.float32, [None, 2])
-	y = tf.placeholder(tf.float32, [None])
+	y = tf.placeholder(tf.float64, [None])
 
 	## Create model and outputs
 	net = SimpleNet(config)
 	net_output = net.forward(X)
 	y_pred, log_sigma = net_output[..., 0], net_output[..., 1]
-	tf.Print(y_pred, [y_pred], "y_pred: ")
-	# tf.summary.scalar("log_sigma", tf.reduce_sum(log_sigma))
+	# tf.Print(y_pred, [y_pred], "y_pred: ")
+	tf.summary.scalar("mean_log_sigma", tf.reduce_mean(log_sigma))
 
 	## Define metrics based on experiment
 	# Loss 
@@ -86,6 +86,8 @@ def main():
       				   "test_loss= {:03f},".format(test_loss), \
       				   "test_rmse={:03f}".format(test_rmse)
       				   )
+
+			# pdb.set_trace()
 
 		print("Training complete")
 
