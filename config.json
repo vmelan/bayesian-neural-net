@@ -1,8 +1,14 @@
 {
 	"exp_name": "loss_bnn", 
 
+	"data_loader": {
+		"data_path": "boston.xls", 
+		"shuffle": true,
+		"test_split": 0.1
+	},
+
 	"optimizer": {
-		"optimizer_type": "Adam", 
+		"optimizer_type": "AdamOptimizer", 
 		"optimizer_params": {
 			"learning_rate": 0.001, 
 			"beta1": 0.9, 
@@ -12,10 +18,12 @@
 	},
 
 	"trainer": {
-		"epochs": 1000, 
+		"num_epochs": 4000, 
 		"batch_size": 16, 
 		"num_iter_per_epoch": 30,
-		"log_dir": "tensorboard/" 
+		"disp_histogram": false, 
+		"writer_step": 1, 
+		"display_step": 1
 	}
 
 }
